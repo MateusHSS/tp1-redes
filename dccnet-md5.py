@@ -6,9 +6,7 @@ import sys
 from server import resolve_ip, communicate
 
 def main():
-    logging.basicConfig(
-        level=logging.INFO, datefmt="%H:%M:%S", format="%(asctime)s: %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO)
 
     host, porta = sys.argv[1].split(":")
     (ip_address, family) = resolve_ip(host, int(porta))

@@ -5,7 +5,7 @@ from server import inicializa_client, inicializa_servidor
 
 def main():
     logging.basicConfig(
-        level=logging.INFO, datefmt="%H:%M:%S", format="%(asctime)s: %(message)s"
+        level=logging.INFO
     )
 
     if(sys.argv[1] == '-s'):
