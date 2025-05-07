@@ -182,7 +182,7 @@ def inicializa_client(ip, porta, input, output, logging):
         if not recebimento_finalizado:
             try:
                 recv = recebe_quadro(servidor)
-                #logging.info(f"frame received: {recv}")
+                logging.info(f"frame received: {recv}")
 
                 if not quadro_valido(
                     recv["checksum"],
@@ -191,21 +191,21 @@ def inicializa_client(ip, porta, input, output, logging):
                     recv["flags"],
                     recv["data"],
                 ):
-                    #logging.info("not acceptable packet, discarting")
+                    logging.info("not acceptable packet, discarting")
                     pass
                 elif eh_reset(recv["flags"]):
                     # reset frame
-                    #logging.info("received an RESET frame")
-                    #logging.info(f"content: {recv['data'].decode()}")
-                    #logging.info("terminating...")
+                    logging.info("received an RESET frame")
+                    logging.info(f"content: {recv['data'].decode()}")
+                    logging.info("terminating...")
                     sys.exit(1)
                 elif eh_ack(recv["flags"]):
-                    #logging.info("duplicate ack, continuing...")
+                    logging.info("duplicate ack, continuing...")
                     pass
                 else:
                     if recv["id"] == last_id and recv["checksum"] == last_chksum:
                         # quadro repetido
-                        #logging.info("duplicate, resending ack")
+                        logging.info("duplicate, resending ack")
                         ack, _ = faz_ack(last_id)
                         servidor.send(ack)
                     else:
@@ -213,15 +213,15 @@ def inicializa_client(ip, porta, input, output, logging):
                         last_id = recv["id"]
                         last_chksum = recv["checksum"]
 
-                        #logging.info("data frame, writing data")
+                        logging.info("data frame, writing data")
                         output_file.write(recv["data"])
 
                         if eh_end(recv["flags"]):
                             recebimento_finalizado = True
                             output_file.close()
-                            #logging.info("frame with END flag received")
+                            logging.info("frame with END flag received")
 
-                        #logging.info("sending ACK")
+                        logging.info("sending ACK")
                         ack, _ = faz_ack(recv["id"])
                         servidor.send(ack)
             except socket.timeout:
@@ -231,23 +231,23 @@ def inicializa_client(ip, porta, input, output, logging):
             if payload == b"":
                 if not envio_finalizado:
                     envio_finalizado = True
-                    #logging.info("all data sent")
+                    logging.info("all data sent")
             else:
                 flags = 0x00
                 if next_payload == b"":
                     flags |= 0x40
-                    #logging.info("last frame is about to be sent")
+                    logging.info("last frame is about to be sent")
 
                 frame, _ = encode(payload, send_id, flags)
 
                 ack_received = False
                 while not ack_received:
                     servidor.send(frame)
-                    #logging.info(f"frame sent: {frame}")
+                    logging.info(f"frame sent: {frame}")
 
                     try:
                         recv = recebe_quadro(servidor)
-                        #logging.info(f"frame received: {recv}")
+                        logging.info(f"frame received: {recv}")
                     except socket.timeout:
                         continue
 
@@ -262,7 +262,7 @@ def inicializa_client(ip, porta, input, output, logging):
 
                     if eh_ack(recv["flags"]) and send_id == recv["id"]:
                         if recv["id"] == send_id:
-                            #logging.info("ACK frame")
+                            logging.info("ACK frame")
                             send_id = (send_id + 1) % 2
                             payload = next_payload
                             next_payload = input_file.read(4096)
@@ -270,14 +270,14 @@ def inicializa_client(ip, porta, input, output, logging):
                         elif recv["id"] == last_id:
                             continue
                     elif eh_reset(recv["flags"]):
-                        #logging.info("received an RESET frame")
-                        #logging.info(f"content: {recv['data'].decode()}")
-                        #logging.info("terminating...")
+                        logging.info("received an RESET frame")
+                        logging.info(f"content: {recv['data'].decode()}")
+                        logging.info("terminating...")
                         sys.exit(1)
                     else:
                         if recv["id"] == last_id and recv["checksum"] == last_chksum:
                             # quadro repetido
-                            #logging.info("duplicate, resending ack")
+                            logging.info("duplicate, resending ack")
                             ack, _ = faz_ack(last_id)
                             servidor.send(ack)
                         else:
@@ -285,22 +285,22 @@ def inicializa_client(ip, porta, input, output, logging):
                             last_id = recv["id"]
                             last_chksum = recv["checksum"]
 
-                            #logging.info("data frame, writing data")
+                            logging.info("data frame, writing data")
                             output_file.write(recv["data"])
 
                             if eh_end(recv["flags"]):
                                 recebimento_finalizado = True
                                 output_file.close()
-                                #logging.info("frame with END flag received")
+                                logging.info("frame with END flag received")
 
-                            #logging.info("sending ACK")
+                            logging.info("sending ACK")
                             ack, _ = faz_ack(recv["id"])
                             servidor.send(ack)
 
-    #logging.info("closing input file")
+    logging.info("closing input file")
     input_file.close()
 
-    #logging.info("client closing connection")
+    logging.info("client closing connection")
     servidor.close()
 
 def resolve_ip(host, port):
